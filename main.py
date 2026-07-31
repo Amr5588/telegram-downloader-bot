@@ -1,9 +1,23 @@
 import os
+import threading
+from flask import Flask
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import requests
 from yt_dlp import YoutubeDL
 
+# 1. Web Server بسيط لمنع Render من إيقاف الخدمة
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is Running Live 24/7!"
+
+def run_web_server():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
+
+# 2. كود بوت التليجرام
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -113,5 +127,9 @@ def process_quality_choice(call):
         print(f"Error: {e}")
 
 if __name__ == "__main__":
+    # تشغيل سيرفر الويب في خلفية منفصلة
+    t = threading.Thread(target=run_web_server)
+    t.start()
+
     print("Bot is starting...")
     bot.infinity_polling(skip_pending_updates=True)
